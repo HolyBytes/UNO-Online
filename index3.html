@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game UNO Online</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .game-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        
+        .card-uno {
+            width: 80px;
+            height: 120px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 15px;
+            margin: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-uno:before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .card-uno:hover {
+            transform: translateY(-15px) rotate(5deg);
+            box-shadow: 0 12px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .red { 
+            background: linear-gradient(145deg, #ff3019, #cf0404);
+            color: white; 
+        }
+        
+        .blue { 
+            background: linear-gradient(145deg, #2989d8, #1e5799);
+            color: white; 
+        }
+        
+        .green { 
+            background: linear-gradient(145deg, #8fc800, #009900);
+            color: white; 
+        }
+        
+        .yellow { 
+            background: linear-gradient(145deg, #ffeb3b, #ffc107);
+            color: black; 
+        }
+        
+        .gray { 
+            background: linear-gradient(145deg, #525252, #3d3d3d);
+            color: white;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='%23333'/%3E%3Cellipse cx='40' cy='60' rx='30' ry='45' fill='none' stroke='%23ff6b6b' stroke-width='4' transform='rotate(-30 40 60)'/%3E%3Ctext x='40' y='65' font-family='Arial' font-size='28' font-weight='bold' fill='white' text-anchor='middle'%3EUNO%3C/text%3E%3C/svg%3E");
+            background-size: cover;
+        }
+        
+        .play-area {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+        }
+        
+        #turn-indicator {
+            font-size: 18px;
+            margin-top: 10px;
+            padding: 8px 15px;
+            border-radius: 50px;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: inline-block;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 10px 15px;
+            min-width: 180px;
+        }
+        
+        /* Main Menu Styling */
+        #main-menu {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-title {
+            font-size: 6rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            letter-spacing: 5px;
+        }
+        
+        .game-title span {
+            display: inline-block;
+            animation: bounceIn 1s;
+        }
+        
+        .game-title span:nth-child(1) { color: #ff3019; animation-delay: 0.1s; }
+        .game-title span:nth-child(2) { color: #2989d8; animation-delay: 0.2s; }
+        .game-title span:nth-child(3) { color: #8fc800; animation-delay: 0.3s; }
+        
+        .start-btn {
+            font-size: 1.5rem;
+            padding: 12px 50px;
+            border-radius: 50px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #ff3019, #2989d8);
+            border: none;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 40px;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(145deg, #2989d8, #8fc800);
+        }
+        
+        /* Loading Screen */
+        #loading-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .cards-shuffle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .shuffle-card {
+            position: absolute;
+            width: 100px;
+            height: 140px;
+            background-color: #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress-bar-container {
+            width: 300px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 40px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #ff3019, #2989d8, #8fc800);
+            border-radius: 10px;
+        }
+        
+        /* Game Screen */
+        #game-screen {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .player-hand {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 20px 10px 10px;
+            border-radius: 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+            min-height: 150px;
+        }
+        
+        .card-draw-pile {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .card-draw-pile:hover {
+            transform: scale(1.1);
+        }
+        
+        @keyframes dealCard {
+            0% { transform: translateY(-300px) rotate(30deg); opacity: 0; }
+            100% { transform: translateY(0) rotate(0); opacity: 1; }
+        }
+        
+        @keyframes showCard {
+            0% { transform: scale(0) rotate(180deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        
+        @keyframes computerThinking {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .thinking {
+            animation: computerThinking 1s infinite;
+        }
+        
+        #game-status {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffc107;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-menu">
+        <h1 class="game-title">
+            <span>U</span>
+            <span>N</span>
+            <span>O</span>
+        </h1>
+        <p class="lead text-white mb-5 animate__animated animate__fadeIn">Permainan kartu klasik yang menyenangkan!</p>
+        <button class="btn start-btn animate__animated animate__pulse animate__infinite" onclick="startGame()">
+            <i class="fas fa-play me-2"></i> Mulai Permainan
+        </button>
+    </div>
+
+    <div id="loading-screen">
+        <h2 class="loading-title animate__animated animate__fadeIn">Menyiapkan Permainan</h2>
+        <div class="cards-shuffle">
+            <div class="shuffle-card" id="card1" style="transform: rotate(-15deg); left: 20px; z-index: 3; background-color: #ff3019;">U</div>
+            <div class="shuffle-card" id="card2" style="transform: rotate(5deg); left: 50px; z-index: 2; background-color: #2989d8;">N</div>
+            <div class="shuffle-card" id="card3" style="transform: rotate(20deg); left: 80px; z-index: 1; background-color: #8fc800;">O</div>
+        </div>
+        <p class="mt-3 loading-message">Mengocok kartu...</p>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="loading-progress"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="game-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-gamepad me-2"></i> Game UNO Online</h2>
+            <span id="turn-indicator" class="badge bg-warning"><i class="fas fa-user me-2"></i> Giliran: Pemain</span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stats-container flex-column">
+                    <div class="stat-box mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-user me-2"></i> Anda:</span>
+                            <span id="player-card-count" class="badge bg-primary">20</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-robot me-2"></i> Komputer:</span>
+                            <span id="computer-card-count" class="badge bg-danger">20</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="play-area">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h4><i class="fas fa-layer-group me-2"></i> Play Area:</h4>
+                            <div id="play-card" class="card-uno gray animate__animated animate__zoomIn">?</div>
+                        </div>
+                        <div class="col-6">
+                            <h4><i class="fas fa-clone me-2"></i> Tumpukan:</h4>
+                            <div id="draw-pile" class="card-uno gray card-draw-pile animate__animated animate__zoomIn" onclick="drawCard()">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mt-4 mb-3">
+            <i class="fas fa-hand-paper me-2"></i> Kartu Anda:
+        </h4>
+        <div id="player-hand" class="player-hand"></div>
+        
+        <h3 id="game-status" class="mt-4 animate__animated animate__fadeIn"></h3>
+
+        <div class="d-flex justify-content-center mt-4">
+            <button class="btn btn-danger me-2" onclick="resetGame()">
+                <i class="fas fa-redo me-2"></i> Reset
+            </button>
+            <button class="btn btn-info" onclick="showRules()">
+                <i class="fas fa-question-circle me-2"></i> Bantuan
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal untuk bantuan/aturan -->
+    <div class="modal fade" id="rulesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aturan Permainan UNO</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>1. Pemain dan komputer masing-masing mendapatkan 20 kartu.</p>
+                    <p>2. Kartu dapat dimainkan jika memiliki warna atau angka yang sama dengan kartu di Play Area.</p>
+                    <p>3. Jika tidak memiliki kartu yang cocok, ambil kartu dari tumpukan.</p>
+                    <p>4. Pemain yang pertama menghabiskan kartu adalah pemenangnya.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let playerHand = [];
+        let computerHand = [];
+        let drawPile = [];
+        let playCard;
+        let playerTurn = true;
+        let playerScore = 0;
+        let computerScore = 0;
+        let rulesModal;
+
+        function startGame() {
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("loading-screen").style.display = "flex";
+            
+            // Animasi pengocok kartu
+            animateShufflingCards();
+            
+            // Animasi loading bar
+            let progress = 0;
+            const progressBar = document.getElementById("loading-progress");
+            const interval = setInterval(() => {
+                progress += 2;
+                progressBar.style.width = progress + "%";
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById("loading-screen").style.display = "none";
+                        document.getElementById("game-screen").style.display = "block";
+                        initializeGame();
+                    }, 500);
+                }
+            }, 50);
+        }
+
+        function animateShufflingCards() {
+            const card1 = document.getElementById("card1");
+            const card2 = document.getElementById("card2");
+            const card3 = document.getElementById("card3");
+            
+            function shuffle() {
+                // Pergerakan acak untuk kartu 1
+                let leftPos1 = 20 + Math.random() * 30;
+                let rotation1 = -20 + Math.random() * 40;
+                card1.style.transition = "all 0.3s ease";
+                card1.style.left = leftPos1 + "px";
+                card1.style.transform = `rotate(${rotation1}deg)`;
+                
+                // Pergerakan acak untuk kartu 2
+                let leftPos2 = 40 + Math.random() * 30;
+                let rotation2 = -10 + Math.random() * 20;
+                card2.style.transition = "all 0.4s ease";
+                card2.style.left = leftPos2 + "px";
+                card2.style.transform = `rotate(${rotation2}deg)`;
+                
+                // Pergerakan acak untuk kartu 3
+                let leftPos3 = 60 + Math.random() * 30;
+                let rotation3 = 0 + Math.random() * 30;
+                card3.style.transition = "all 0.35s ease";
+                card3.style.left = leftPos3 + "px";
+                card3.style.transform = `rotate(${rotation3}deg)`;
+            }
+            
+            // Animasi pengocok kartu setiap 300ms
+            const shuffleInterval = setInterval(shuffle, 300);
+            setTimeout(() => {
+                clearInterval(shuffleInterval);
+            }, 3000);
+        }
+
+        function initializeGame() {
+            let colors = ["red", "blue", "green", "yellow"];
+            let deck = [];
+
+            for (let color of colors) {
+                for (let num = 0; num <= 9; num++) {
+                    deck.push({ color: color, number: num });
+                }
+            }
+
+            deck = shuffle(deck.concat(deck)); // Total 100 kartu
+            playerHand = deck.splice(0, 20);
+            computerHand = deck.splice(0, 20);
+            playCard = deck.pop();
+            drawPile = deck;
+
+            document.getElementById("game-status").textContent = "";
+            updateUI();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateUI() {
+            // Set play card
+            const playCardElement = document.getElementById("play-card");
+            playCardElement.textContent = playCard.number;
+            playCardElement.className = `card-uno ${playCard.color} animate__animated animate__zoomIn`;
+            
+            // Update player hand
+            const playerHandElement = document.getElementById("player-hand");
+            playerHandElement.innerHTML = "";
+
+            playerHand.forEach((card, index) => {
+                let cardDiv = document.createElement("div");
+                cardDiv.className = `card-uno ${card.color} animate__animated animate__fadeInUp`;
+                cardDiv.style.animationDelay = `${index * 0.05}s`;
+                cardDiv.textContent = card.number;
+                cardDiv.onclick = () => playCardPlayer(index);
+                playerHandElement.appendChild(cardDiv);
+            });
+
+            // Update card counts
+            document.getElementById("player-card-count").textContent = playerHand.length;
+            document.getElementById("computer-card-count").textContent = computerHand.length;
+            
+            // Update turn indicator
+            const turnIndicator = document.getElementById("turn-indicator");
+            if (playerTurn) {
+                turnIndicator.className = "badge bg-warning";
+                turnIndicator.innerHTML = "<i class='fas fa-user me-2'></i> Giliran: Pemain";
+            } else {
+                turnIndicator.className = "badge bg-info";
+                turnIndicator.innerHTML = "<i class='fas fa-robot me-2'></i> Giliran: Komputer";
+            }
+            
+            // Check win condition
+            if (playerHand.length === 0) {
+                document.getElementById("game-status").textContent = "Selamat! Anda Menang!";
+                document.getElementById("game-status").className = "mt-4 animate__animated animate__tada";
+                playerScore++;
+                playerTurn = true;
+            } else if (computerHand.length === 0) {
+                document.getElementById("game-status").textContent = "Komputer Menang!";
+                document.getElementById("game-status").className = "mt-4 animate__animated animate__fadeIn";
+                computerScore++;
+                playerTurn = true;
+            }
+        }
+
+        function playCardPlayer(index) {
+            if (!playerTurn) return;
+
+            const selectedCard = playerHand[index];
+            const turnIndicator = document.getElementById("turn-indicator");
+            
+            if (selectedCard.color === playCard.color || selectedCard.number === playCard.number) {
+                turnIndicator.innerHTML = "<i class='fas fa-spinner fa-spin me-2'></i> Pemain Sedang Memilih...";
+                
+                setTimeout(() => {
+                    playCard = selectedCard;
+                    playerHand.splice(index, 1);
+                    playerTurn = false;
+                    updateUI();
+                    
+                    if (playerHand.length > 0 && computerHand.length > 0) {
+                        setTimeout(computerTurn, 1000);
+                    }
+                }, 500);
+            } else {
+                // Animasi jika kartu tidak valid
+                const invalidCard = document.querySelectorAll('#player-hand .card-uno')[index];
+                invalidCard.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    invalidCard.classList.remove('animate__animated', 'animate__shakeX');
+                }, 500);
+            }
+        }
+
+        function drawCard() {
+            if (!playerTurn || drawPile.length === 0) return;
+            
+            const cardDrawn = drawPile.pop();
+            playerHand.push(cardDrawn);
+            
+            const drawPileElement = document.getElementById("draw-pile");
+            drawPileElement.classList.add('animate__animated', 'animate__flipOutY');
+            
+            setTimeout(() => {
+                drawPileElement.classList.remove('animate__animated', 'animate__flipOutY');
+                drawPileElement.classList.add('animate__animated', 'animate__flipInY');
+                updateUI();
+                
+                setTimeout(() => {
+                    drawPileElement.classList.remove('animate__animated', 'animate__flipInY');
+                }, 500);
+            }, 300);
+        }
+
+        function computerTurn() {
+            const turnIndicator = document.getElementById("turn-indicator");
+            turnIndicator.innerHTML = "<i class='fas fa-robot me-2'></i> Komputer Sedang Berpikir...";
+            
+            // Tambahkan animasi thinking pada play card
+            const playCardElement = document.getElementById("play-card");
+            playCardElement.classList.add('thinking');
+            
+            setTimeout(() => {
+                let playableCards = computerHand.filter(card => card.color === playCard.color || card.number === playCard.number);
+                
+                playCardElement.classList.remove('thinking');
+                
+                if (playableCards.length > 0) {
+                    // Computer memilih kartu secara acak dari kartu yang bisa dimainkan
+                    const randomIndex = Math.floor(Math.random() * playableCards.length);
+                    playCard = playableCards[randomIndex];
+                    const cardIndex = computerHand.findIndex(card => 
+                        card.color === playCard.color && card.number === playCard.number
+                    );
+                    computerHand.splice(cardIndex, 1);
+                } else {
+                    if (drawPile.length > 0) {
+                        computerHand.push(drawPile.pop());
+                        
+                        // Animasi komputer mengambil kartu
+                        document.getElementById("draw-pile").classList.add('animate__animated', 'animate__heartBeat');
+                        setTimeout(() => {
+                            document.getElementById("draw-pile").classList.remove('animate__animated', 'animate__heartBeat');
+                        }, 500);
+                    }
+                }
+
+                playerTurn = true;
+                updateUI();
+            }, 1500);
+        }
+
+        function resetGame() {
+            document.getElementById("game-screen").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+        }
+
+        function showRules() {
+            if (!rulesModal) {
+                rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
+            }
+            rulesModal.show();
+        }
+
+        // Event listener saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            // Initialize bootstrap components
+            rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
+        });
+    </script>
+
+</body>
+</html>
